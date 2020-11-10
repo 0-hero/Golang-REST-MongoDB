@@ -28,4 +28,8 @@ The server is thread safe. All multi-threaded operations will be managed by the 
 ### 2. Pagination - TODO
 Feature almost complete
 ### 2. Unit Tests 
-Various unit tests available
+Unit Tests written for: 
+* Create an article
+* Get an article using id
+* Get an article using id error
+* List all articles
