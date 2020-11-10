@@ -10,7 +10,6 @@ import (
 	"context"
 	"time"
 	"strconv"
-	"sync"
 
 	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/bson"
@@ -20,9 +19,9 @@ import (
 
 // Structs and Utilities
 
-var lock sync.Mutex // thread Safety mutex
-
 var collection = ConnectDB()
+var limit int64 = 10
+	var page int64 = 1
 
 type Timestamp time.Time
 
@@ -64,7 +63,7 @@ func ConnectDB() *mongo.Collection {
 
 	fmt.Println("Connected to MongoDB!")
 
-	collection := client.Database("GolangServer").Collection("Articles")
+	collection := client.Database("GolangServer()").Collection("Articles")
 
 	// MongoDB text index for searching
 
@@ -95,6 +94,30 @@ type ErrorResponse struct {
 	ErrorMessage string `json:"message"`
 }
 
+// Pagination function
+/*
+func paginate() {
+	paginatedData, err := collection.Limit(limit).Page(page).Sort("price", -1).Select(bson.D{}).Filter(filter).Find()
+    	if err != nil {
+    		panic(err)
+    	}
+    
+    	// paginated data is in paginatedData.Data
+    	// pagination info can be accessed in  paginatedData.Pagination
+    	// if you want to marshal data to your defined struct
+    
+    	var lists []Article
+    	for _, raw := range paginatedData.Data {
+    		var article *Article
+    		if marshallErr := bson.Unmarshal(raw, &article); marshallErr == nil {
+    			lists = append(lists, *article)
+    		}
+    
+		}
+		return lists
+}
+*/
+
 // getError : This is helper function to prepare error model.
 func getError(err error, w http.ResponseWriter) {
 
@@ -122,6 +145,7 @@ func homePage(w http.ResponseWriter, r *http.Request) {
 func returnAllArticles(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Endpoint Hit: returnAllArticles")
 	w.Header().Set("Content-Type", "application/json")
+	
 	var Articles []Article
 	cur, err := collection.Find(context.TODO(), bson.M{})
 	if err != nil {
@@ -145,7 +169,9 @@ func returnAllArticles(w http.ResponseWriter, r *http.Request) {
 	if err := cur.Err(); err != nil {
 		log.Fatal(err)
 	}
+		
 	json.NewEncoder(w).Encode(Articles)
+
 }
 
 // Return articles based on ID
